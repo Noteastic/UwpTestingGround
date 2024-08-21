@@ -14,8 +14,8 @@
   <mp:PhoneIdentity PhoneProductId="518d08b0-ed49-4a41-9e15-908fee04c52d" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>Presentation</DisplayName>
-    <PublisherDisplayName>boska</PublisherDisplayName>
+    <DisplayName>Noteastic</DisplayName>
+    <PublisherDisplayName>Noteastic</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 
