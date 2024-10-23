@@ -4,11 +4,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Presentation"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
-        <Button HorizontalAlignment="Center" VerticalAlignment="Center">Hello World!</Button>
+        <ScrollViewer x:Name="ScrollViewer" ZoomMode="Enabled" ViewChanged="ScrollViewer_ViewChanged" MinZoomFactor="0.5">
+            <Grid Height="100000">
+                <xaml:CanvasVirtualControl x:Name="CanvasVirtualControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CreateResources="CanvasVirtualControl_CreateResources" RegionsInvalidated="CanvasVirtualControl_RegionsInvalidated"/>
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </Page>
