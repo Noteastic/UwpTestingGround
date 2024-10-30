@@ -11,7 +11,9 @@
     <Grid>
         <ScrollViewer x:Name="ScrollViewer" ZoomMode="Enabled" ViewChanged="ScrollViewer_ViewChanged" MinZoomFactor="0.5">
             <Grid Height="100000">
-                <xaml:CanvasVirtualControl x:Name="CanvasVirtualControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CreateResources="CanvasVirtualControl_CreateResources" RegionsInvalidated="CanvasVirtualControl_RegionsInvalidated"/>
+                <local:LargeCanvasVirtualControl x:Name="CanvasVirtualControl"
+                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                 RenderCommand="{x:Bind RenderCommand, Mode=OneTime}"/>
             </Grid>
         </ScrollViewer>
     </Grid>

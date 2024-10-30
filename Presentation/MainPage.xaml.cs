@@ -1,8 +1,11 @@
-﻿using Microsoft.Graphics.Canvas;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.UI;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -13,6 +16,7 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -28,6 +32,7 @@ namespace Presentation
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
+    [ObservableObject]
     public sealed partial class MainPage : Page
     {
         public MainPage()
@@ -35,51 +40,11 @@ namespace Presentation
             this.InitializeComponent();
         }
 
-        private CancellationTokenSource _cts = new CancellationTokenSource();
-        private SemaphoreSlim _renderSemaphore = new SemaphoreSlim(1);
-        private Stack<Rect> _rects = new Stack<Rect>();
-        private async void CanvasVirtualControl_RegionsInvalidated(CanvasVirtualControl sender, CanvasRegionsInvalidatedEventArgs args) {
+        [RelayCommand]
+        private void Render(RenderOptions renderOptions) {
+            var ds = renderOptions.DrawingSession;
+            var region = renderOptions.Region;
 
-            _cts.Cancel();
-            _cts.Dispose();
-            _cts = new CancellationTokenSource();
-            var ct = _cts.Token;
-
-            try {
-                await _renderSemaphore.WaitAsync(ct);
-
-                foreach (var region in args.InvalidatedRegions) {
-                    _rects.Push(region);
-                }
-                try {
-                    while (_rects.TryPeek(out Rect region)) {
-                        if (_renderSynchronous) {
-                            using (var ds = sender.CreateDrawingSession(region)) {
-                                Render(ds, region, ct);
-                            }
-                        } else {
-                            using (var ds = sender.CreateDrawingSession(region)) {
-                                sender.SuspendDrawingSession(ds);
-                                await Task.Run(() => {
-                                    sender.ResumeDrawingSession(ds);
-                                    Render(ds, region, ct);
-                                    sender.SuspendDrawingSession(ds);
-                                    return ds;
-                                }, ct);
-                            }
-                        }
-                        _rects.Pop();
-                    }
-                    _renderSynchronous = false;
-                } finally {
-                    _renderSemaphore.Release();
-                }
-            } catch (OperationCanceledException) {
-                return;
-            }
-        }
-
-        private void Render(CanvasDrawingSession ds, Rect region, CancellationToken ct = default) {
             // Get the total height of the CanvasVirtualControl
             float totalHeight = 100000;
             float stripeHeight = 20; // Height of each stripe
@@ -98,29 +63,22 @@ namespace Presentation
 
                 // Use the % operator to cycle through the list of colors
                 var stripeColor = colors[(int)(y / stripeHeight) % colors.Count];
-                if (ct.IsCancellationRequested)
-                    return;
+                Thread.Sleep(10);
                 ds.FillRectangle(new Rect(0, y, 500, stripeHeight), stripeColor);
             }
         }
 
-        private async void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e) {
-            if (!e.IsIntermediate) {
-                await _renderSemaphore.WaitAsync();
-                try {
-                    CanvasVirtualControl.DpiScale = ScrollViewer.ZoomFactor;
-                } finally {
-                    _renderSemaphore.Release();
-                }
-            }
+        private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e) {
+            CanvasVirtualControl.DpiScale = ScrollViewer.ZoomFactor;
         }
+    }
+}
 
-        private void CanvasVirtualControl_CreateResources(CanvasVirtualControl sender, CanvasCreateResourcesEventArgs args) {
-            if (args.Reason == CanvasCreateResourcesReason.DpiChanged) {
-                _renderSynchronous = true;
-            }
-        }
-
-        private bool _renderSynchronous = false;
+public static class RectExtensions {
+    public static bool OverlapsWith(this in Rect r1, in Rect r2, int margin = 0) {
+        return r1.Left < r2.Right + margin && r1.Right > r2.Left - margin && r1.Top < r2.Bottom + margin && r1.Bottom > r2.Top - margin;
+    }
+    public static bool Contains(this in Rect r1, in Rect r2) {
+        return r1.Contains(new Point(r2.X, r2.Y)) && r1.Contains(new Point(r2.X +r2.Width, r2.Y + r2.Height));
     }
 }
