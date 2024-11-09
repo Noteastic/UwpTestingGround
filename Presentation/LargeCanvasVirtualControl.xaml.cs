@@ -25,7 +25,7 @@ using Windows.UI.Core;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-public record RenderOptions(CanvasDrawingSession DrawingSession, Rect Region);
+public record RenderOptions(CanvasDrawingSession DrawingSession, Rect Region, CancellationToken CancellationToken);
 
 namespace Presentation {
 
@@ -37,7 +37,7 @@ namespace Presentation {
 
         private void CanvasVirtualControl_CreateResources(CanvasVirtualControl sender, CanvasCreateResourcesEventArgs args) {
             if (args.Reason == CanvasCreateResourcesReason.DpiChanged) {
-                _renderSynchronous = true;
+                _renderSynchronous = false;
             }
         }
 
@@ -58,7 +58,7 @@ namespace Presentation {
                     if (_renderSynchronous) {
                         while (_rects.TryPeek(out Rect region)) {
                             using (var ds = sender.CreateDrawingSession(region)) {
-                                RenderCommand?.Execute(new RenderOptions(ds, region));
+                                RenderCommand?.Execute(new RenderOptions(ds, region, ct));
                             }
                             _rects.Pop();
                         }
@@ -71,7 +71,7 @@ namespace Presentation {
                             CanvasDrawingSession ds = null;
                             try {
                                 ds = sender.CreateDrawingSession(region);
-                                RenderCommand?.Execute(new RenderOptions(ds, region));
+                                RenderCommand?.Execute(new RenderOptions(ds, region, ct));
                             } finally {
                                 if (ds is not null) {
                                     sender.SuspendDrawingSession(ds);
@@ -135,5 +135,14 @@ namespace Presentation {
         private SemaphoreSlim _renderSemaphore = new SemaphoreSlim(1);
         private Stack<Rect> _rects = new Stack<Rect>();
         private bool _renderSynchronous = false;
+
+        private void CanvasVirtualControl_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            _cts.Cancel();
+            _cts.Dispose();
+            _cts = new CancellationTokenSource();
+
+            _rects.Clear();
+        }
     }
 }

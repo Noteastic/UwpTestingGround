@@ -4,16 +4,37 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Presentation"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    
+    x:Name="Root">
 
     <Grid>
-        <ScrollViewer x:Name="ScrollViewer" ZoomMode="Enabled" ViewChanged="ScrollViewer_ViewChanged" MinZoomFactor="0.5">
-            <Grid Height="100000">
-                <local:LargeCanvasVirtualControl x:Name="CanvasVirtualControl"
-                                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                                 RenderCommand="{x:Bind RenderCommand, Mode=OneTime}"/>
+        <ScrollViewer x:Name="ScrollViewer" ZoomMode="Enabled" ViewChanged="ScrollViewer_ViewChanged" MinZoomFactor="0.2"
+                      HorizontalScrollMode="Enabled" VerticalScrollMode="Enabled"
+                      HorizontalScrollBarVisibility="Visible">
+            <Grid Margin="0,0,0,500" Padding="0,0,0,500">
+                <muxc:ItemsRepeater ItemsSource="{x:Bind Pages, Mode=OneWay}"
+                                    ElementPrepared="ItemsRepeater_ElementPrepared"
+                                    ElementIndexChanged="ItemsRepeater_ElementIndexChanged"
+                                    ElementClearing="ItemsRepeater_ElementClearing">
+                    <muxc:ItemsRepeater.Layout>
+                        <muxc:StackLayout Orientation="Vertical" Spacing="15"/>
+                    </muxc:ItemsRepeater.Layout>
+
+                    <muxc:ItemsRepeater.ItemTemplate>
+                        <DataTemplate x:DataType="local:NoteasticPageModel">
+                            <Grid Width="1000">
+                                <local:NoteasticPage HorizontalAlignment="Center" PageModel="{x:Bind}"></local:NoteasticPage>
+                            </Grid>
+                        </DataTemplate>
+                    </muxc:ItemsRepeater.ItemTemplate>
+                </muxc:ItemsRepeater>
+
+                <Button Command="{x:Bind RemovePagesCommand}" VerticalAlignment="Top">Remove Pages</Button>
             </Grid>
         </ScrollViewer>
     </Grid>

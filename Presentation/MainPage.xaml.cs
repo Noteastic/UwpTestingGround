@@ -1,10 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.WinUI;
 using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Brushes;
+using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.UI;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -27,6 +32,7 @@ using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
+
 namespace Presentation
 {
     /// <summary>
@@ -35,50 +41,126 @@ namespace Presentation
     [ObservableObject]
     public sealed partial class MainPage : Page
     {
+        public ObservableCollection<NoteasticPageModel> Pages = new()
+        {
+            new NoteasticPageModel(new Size(500, 500), 1),
+            new NoteasticPageModel(new Size(1000, 500), 1),
+            new NoteasticPageModel(new Size(500, 1000), 1),
+            new NoteasticPageModel(new Size(1000, 1000), 1),
+            new NoteasticPageModel(new Size(500, 500), 1),
+            new NoteasticPageModel(new Size(1000, 500), 1),
+            new NoteasticPageModel(new Size(500, 1000), 1),
+            new NoteasticPageModel(new Size(1000, 1000), 1),
+            new NoteasticPageModel(new Size(500, 500), 1),
+            new NoteasticPageModel(new Size(1000, 500), 1),
+            new NoteasticPageModel(new Size(500, 1000), 1),
+            new NoteasticPageModel(new Size(1000, 1000), 1),
+            new NoteasticPageModel(new Size(500, 500), 1),
+            new NoteasticPageModel(new Size(1000, 500), 1),
+            new NoteasticPageModel(new Size(500, 1000), 1),
+            new NoteasticPageModel(new Size(1000, 1000), 1),
+            new NoteasticPageModel(new Size(500, 500), 1),
+            new NoteasticPageModel(new Size(1000, 500), 1),
+            new NoteasticPageModel(new Size(500, 1000), 1),
+            new NoteasticPageModel(new Size(1000, 1000), 1),
+            new NoteasticPageModel(new Size(500, 500), 1),
+            new NoteasticPageModel(new Size(1000, 500), 1),
+            new NoteasticPageModel(new Size(500, 1000), 1),
+            new NoteasticPageModel(new Size(1000, 1000), 1),
+            new NoteasticPageModel(new Size(500, 500), 1),
+            new NoteasticPageModel(new Size(1000, 500), 1),
+            new NoteasticPageModel(new Size(500, 1000), 1),
+            new NoteasticPageModel(new Size(1000, 1000), 1),
+            new NoteasticPageModel(new Size(500, 500), 1),
+            new NoteasticPageModel(new Size(1000, 500), 1),
+            new NoteasticPageModel(new Size(500, 1000), 1),
+            new NoteasticPageModel(new Size(1000, 1000), 1),
+            new NoteasticPageModel(new Size(500, 500), 1),
+            new NoteasticPageModel(new Size(1000, 500), 1),
+            new NoteasticPageModel(new Size(500, 1000), 1),
+            new NoteasticPageModel(new Size(1000, 1000), 1),
+            new NoteasticPageModel(new Size(500, 500), 1),
+            new NoteasticPageModel(new Size(1000, 500), 1),
+            new NoteasticPageModel(new Size(500, 1000), 1),
+            new NoteasticPageModel(new Size(1000, 1000), 1),
+            new NoteasticPageModel(new Size(500, 500), 1),
+            new NoteasticPageModel(new Size(1000, 500), 1),
+            new NoteasticPageModel(new Size(500, 1000), 1),
+            new NoteasticPageModel(new Size(1000, 1000), 1),
+            new NoteasticPageModel(new Size(500, 500), 1),
+            new NoteasticPageModel(new Size(1000, 500), 1),
+            new NoteasticPageModel(new Size(500, 1000), 1),
+            new NoteasticPageModel(new Size(1000, 1000), 1),
+            new NoteasticPageModel(new Size(500, 500), 1),
+            new NoteasticPageModel(new Size(1000, 500), 1),
+            new NoteasticPageModel(new Size(500, 1000), 1),
+            new NoteasticPageModel(new Size(1000, 1000), 1),
+            new NoteasticPageModel(new Size(500, 500), 1),
+            new NoteasticPageModel(new Size(1000, 500), 1),
+            new NoteasticPageModel(new Size(500, 1000), 1),
+            new NoteasticPageModel(new Size(1000, 1000), 1),
+            new NoteasticPageModel(new Size(500, 500), 1),
+            new NoteasticPageModel(new Size(1000, 500), 1),
+            new NoteasticPageModel(new Size(500, 1000), 1),
+            new NoteasticPageModel(new Size(1000, 1000), 1)
+        };
+
         public MainPage()
         {
             this.InitializeComponent();
+
+            Pages.CollectionChanged += Pages_CollectionChanged;
         }
 
         [RelayCommand]
-        private void Render(RenderOptions renderOptions) {
-            var ds = renderOptions.DrawingSession;
-            var region = renderOptions.Region;
+        private void RemovePages()
+        {
+            Pages.Clear();
 
-            // Get the total height of the CanvasVirtualControl
-            float totalHeight = 100000;
-            float stripeHeight = 20; // Height of each stripe
+            (Window.Current.Content as Frame).Navigate(typeof(Page));
 
-            // List of colors to cycle through
-            var colors = new List<Color> { Colors.Blue, Colors.Red, Colors.Green, Colors.Yellow, Colors.Purple };
+            GC.Collect();
+        }
 
-            // Calculate the starting y position based on the region.Top
-            float startY = (float)Math.Floor(region.Top / stripeHeight) * stripeHeight;
-
-            for (float y = startY; y < totalHeight; y += stripeHeight) {
-                // Exit if the current y position is not visible anymore
-                if (y > region.Bottom) {
-                    break;
-                }
-
-                // Use the % operator to cycle through the list of colors
-                var stripeColor = colors[(int)(y / stripeHeight) % colors.Count];
-                Thread.Sleep(10);
-                ds.FillRectangle(new Rect(0, y, 500, stripeHeight), stripeColor);
+        partial void OnDpiScaleChanged(float value)
+        {
+            foreach (var page in Pages)
+            {
+                page.DpiScale = value;
             }
         }
 
-        private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e) {
-            CanvasVirtualControl.DpiScale = ScrollViewer.ZoomFactor;
+        private void Pages_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            // Calculate max width
+            MaxWidth = Pages.Any() ? Pages.Max(p => p.Size.Width) : 1000;
         }
-    }
-}
 
-public static class RectExtensions {
-    public static bool OverlapsWith(this in Rect r1, in Rect r2, int margin = 0) {
-        return r1.Left < r2.Right + margin && r1.Right > r2.Left - margin && r1.Top < r2.Bottom + margin && r1.Bottom > r2.Top - margin;
-    }
-    public static bool Contains(this in Rect r1, in Rect r2) {
-        return r1.Contains(new Point(r2.X, r2.Y)) && r1.Contains(new Point(r2.X +r2.Width, r2.Y + r2.Height));
+        private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e) {
+            DpiScale = ScrollViewer.ZoomFactor;
+        }
+
+        [ObservableProperty]
+        private float _dpiScale = 1;
+        [ObservableProperty]
+        private double _maxWidth = 0;
+
+
+        private void ItemsRepeater_ElementPrepared(Microsoft.UI.Xaml.Controls.ItemsRepeater sender, Microsoft.UI.Xaml.Controls.ItemsRepeaterElementPreparedEventArgs args)
+        {
+            var page = args.Element.FindDescendantOrSelf<NoteasticPage>();
+            page?.Prepare();
+        }
+
+        private void ItemsRepeater_ElementIndexChanged(Microsoft.UI.Xaml.Controls.ItemsRepeater sender, Microsoft.UI.Xaml.Controls.ItemsRepeaterElementIndexChangedEventArgs args)
+        {
+
+        }
+        private void ItemsRepeater_ElementClearing(Microsoft.UI.Xaml.Controls.ItemsRepeater sender, Microsoft.UI.Xaml.Controls.ItemsRepeaterElementClearingEventArgs args)
+        {
+
+            var page = args.Element.FindDescendantOrSelf<NoteasticPage>();
+            page?.Cleanup();
+        }
     }
 }

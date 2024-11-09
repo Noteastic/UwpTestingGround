@@ -11,5 +11,6 @@
 
     <xaml:CanvasVirtualControl x:Name="CanvasVirtualControl"
                                CreateResources="CanvasVirtualControl_CreateResources"
-                               RegionsInvalidated="CanvasVirtualControl_RegionsInvalidated"/>
+                               RegionsInvalidated="CanvasVirtualControl_RegionsInvalidated"
+                               SizeChanged="CanvasVirtualControl_SizeChanged"/>
 </UserControl>
